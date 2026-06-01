@@ -67,9 +67,17 @@ If permission is not granted, enable it in:
 
 `System Settings > Privacy & Security > Accessibility`
 
-Add Terminal, iTerm, or the `macahk` binary, depending on how you launch it. Depending on your macOS version, keyboard monitoring may also require:
+For the release ZIP, grant permission to the exact unzipped `macahk` executable you plan to use. Move the unzipped folder to its final location before granting permission; if you move or replace the binary later, macOS may treat it as a different tool and require permission again. If macOS does not add it automatically, drag `macahk` from Finder into the Accessibility list.
+
+Depending on your macOS version, keyboard monitoring may also require:
 
 `System Settings > Privacy & Security > Input Monitoring`
+
+After changing these permissions, restart Terminal and run the permission check again:
+
+```sh
+./macahk --check-accessibility
+```
 
 Run the included hotkey example:
 
