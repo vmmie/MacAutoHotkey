@@ -55,7 +55,7 @@ Implemented in this prototype:
 Most users should download the release ZIP instead of building from source.
 
 1. Open the GitHub Releases page for this repository.
-2. Download `MacAutoHotkey-0.2.0-macos-arm64.zip`.
+2. Download `MacAutoHotkey-0.3.0-macos-arm64.zip`.
 3. Unzip the file.
 4. Drag `MacAutoHotkey.app` into `/Applications`.
 5. Open `MacAutoHotkey.app` once. It runs as a menu-bar app and shows an `AHK` item in the macOS menu bar.

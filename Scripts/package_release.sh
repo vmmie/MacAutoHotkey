@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-VERSION="${1:-0.2.0}"
+VERSION="${1:-0.3.0}"
 ROOT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 PACKAGE_NAME="MacAutoHotkey-$VERSION"
 PACKAGE_DIR="$ROOT_DIR/dist/$PACKAGE_NAME"
