@@ -18,6 +18,12 @@ final class HotstringManager {
         }
     }
 
+    func reset() {
+        declarations.removeAll()
+        buffer.removeAll()
+        replacementHandler = nil
+    }
+
     private func record(event: CGEvent) {
         guard let chars = event.characters, !chars.isEmpty else {
             return

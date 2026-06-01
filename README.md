@@ -2,7 +2,7 @@
 
 MacAutoHotkey is an experimental native macOS runtime for a focused AutoHotkey v2-style subset. It is designed as a real foundation for a future macOS-compatible AutoHotkey implementation, not as a wrapper around Windows APIs.
 
-The current executable is `macahk`, a CLI tool that loads `.ahk` files, parses a small v2-oriented syntax subset, registers global hotkeys/hotstrings, and uses macOS Accessibility/CoreGraphics/AppKit APIs for automation.
+The release ships as `MacAutoHotkey.app`, a menu-bar app that opens `.ahk` files and lets you stop running scripts from the menu bar. The app also contains the `macahk` CLI for terminal workflows. Both modes use the same parser/runtime and macOS Accessibility/CoreGraphics/AppKit automation layer.
 
 ## Technology Choice
 
@@ -42,59 +42,76 @@ Implemented in this prototype:
 - `MouseMove`
 - `Click`
 - `Sleep`
+- macOS menu-bar app with `Open Script...`, `Stop Running Script`, and `Quit`
+- `.ahk` document registration for setting MacAutoHotkey as the default app in Finder
 
 ## Download and Use
 
 Most users should download the release ZIP instead of building from source.
 
 1. Open the GitHub Releases page for this repository.
-2. Download `MacAutoHotkey-0.1.0-macos-arm64.zip`.
+2. Download `MacAutoHotkey-0.2.0-macos-arm64.zip`.
 3. Unzip the file.
-4. Open Terminal in the unzipped `MacAutoHotkey-0.1.0` folder.
-5. Make the executable runnable:
+4. Drag `MacAutoHotkey.app` into `/Applications`.
+5. Open `MacAutoHotkey.app` once. It runs as a menu-bar app and shows an `AHK` item in the macOS menu bar.
 
-```sh
-chmod +x macahk
-```
+The menu-bar item lets you:
 
-Check whether macOS automation permission is available:
+- open an `.ahk` script
+- see which script is running
+- stop the running script
+- quit MacAutoHotkey
 
-```sh
-./macahk --check-accessibility
-```
+### Permissions
 
-If permission is not granted, enable it in:
+macOS must allow MacAutoHotkey to observe hotkeys and send keyboard/mouse events. Enable it in:
 
 `System Settings > Privacy & Security > Accessibility`
 
-For the release ZIP, grant permission to the exact unzipped `macahk` executable you plan to use. Move the unzipped folder to its final location before granting permission; if you move or replace the binary later, macOS may treat it as a different tool and require permission again. If macOS does not add it automatically, drag `macahk` from Finder into the Accessibility list.
+Grant permission to `/Applications/MacAutoHotkey.app`. Move the app to its final location before granting permission; if you move or replace the app later, macOS may require permission again. If macOS does not add it automatically, drag `MacAutoHotkey.app` from Finder into the Accessibility list.
 
 Depending on your macOS version, keyboard monitoring may also require:
 
 `System Settings > Privacy & Security > Input Monitoring`
 
-After changing these permissions, restart Terminal and run the permission check again:
+After changing these permissions, quit and reopen MacAutoHotkey.
+
+You can also check permission from Terminal:
 
 ```sh
-./macahk --check-accessibility
+/Applications/MacAutoHotkey.app/Contents/MacOS/macahk --check-accessibility
 ```
 
-Run the included hotkey example:
+### Run Scripts
 
-```sh
-./macahk Examples/hello.ahk
-```
+Use the menu-bar item and choose `Open Script...`, then select an `.ahk` file.
 
-Then press `Control + J`. A message box should appear with:
+To make `.ahk` files open with MacAutoHotkey by default:
+
+1. Select any `.ahk` file in Finder.
+2. Choose `File > Get Info`.
+3. In `Open with`, select `MacAutoHotkey.app`.
+4. Click `Change All...`.
+
+After that, double-clicking an `.ahk` file starts it with MacAutoHotkey, similar to AutoHotkey on Windows.
+
+Try the included example:
+
+1. Open `Examples/hello.ahk` with MacAutoHotkey.
+2. Press `Control + J`.
+
+A message box should appear with:
 
 ```text
 Hello from macOS AHK
 ```
 
-Run your own script:
+Stop the running script from the `AHK` menu-bar item with `Stop Running Script`.
+
+You can still run scripts from Terminal:
 
 ```sh
-./macahk path/to/script.ahk
+/Applications/MacAutoHotkey.app/Contents/MacOS/macahk path/to/script.ahk
 ```
 
 Example script:
@@ -105,20 +122,31 @@ Example script:
 ^j::MsgBox "Hello from macOS AHK"
 ```
 
-Stop a running script with `Control + C` in Terminal.
-
 ### Gatekeeper
 
-The current release binary is not code-signed or notarized. macOS may block it after download. If that happens, remove the quarantine attribute from the unzipped folder:
+The current release app is ad-hoc signed but not notarized. macOS may block it after download. If that happens, right-click `MacAutoHotkey.app`, choose `Open`, and confirm.
+
+If macOS still blocks it, remove the quarantine attribute:
 
 ```sh
-xattr -dr com.apple.quarantine .
+xattr -dr com.apple.quarantine /Applications/MacAutoHotkey.app
 ```
 
-Then run the permission check again:
+## CLI Usage
+
+The app bundle also contains the `macahk` CLI:
 
 ```sh
-./macahk --check-accessibility
+/Applications/MacAutoHotkey.app/Contents/MacOS/macahk --help
+/Applications/MacAutoHotkey.app/Contents/MacOS/macahk Examples/hello.ahk
+```
+
+When running through the CLI, stop a persistent script with `Control + C` in Terminal.
+
+For development builds, the CLI is also available at:
+
+```sh
+.build/release/macahk
 ```
 
 ## Build
@@ -129,31 +157,29 @@ Requirements:
 - Xcode command line tools
 - Swift 6 or newer
 
-Build:
+Build the CLI:
 
 ```sh
 swift build
 ```
 
-Run the hello example:
+Build the app bundle:
 
 ```sh
-swift run macahk Examples/hello.ahk
+Scripts/build_app.sh
 ```
 
-Check Accessibility permission:
+The app is created at:
+
+```text
+dist/MacAutoHotkey.app
+```
+
+Build a release ZIP:
 
 ```sh
-swift run macahk --check-accessibility
+Scripts/package_release.sh
 ```
-
-macOS must allow the built tool or Terminal/iTerm in:
-
-`System Settings > Privacy & Security > Accessibility`
-
-Depending on your macOS version, keyboard monitoring may also require:
-
-`System Settings > Privacy & Security > Input Monitoring`
 
 ## Examples
 

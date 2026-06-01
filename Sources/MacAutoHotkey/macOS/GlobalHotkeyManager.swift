@@ -44,6 +44,20 @@ final class GlobalHotkeyManager {
         CGEvent.tapEnable(tap: tap, enable: true)
     }
 
+    func stop() {
+        if let eventTap {
+            CGEvent.tapEnable(tap: eventTap, enable: false)
+            CFMachPortInvalidate(eventTap)
+        }
+        if let runLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
+        }
+        eventTap = nil
+        runLoopSource = nil
+        handlers.removeAll()
+        keyObservers.removeAll()
+    }
+
     fileprivate func handle(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         guard type == .keyDown else {
             return Unmanaged.passUnretained(event)

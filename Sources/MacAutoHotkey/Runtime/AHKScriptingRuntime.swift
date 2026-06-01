@@ -6,6 +6,10 @@ final class AHKScriptingRuntime {
     private let hotkeyManager: GlobalHotkeyManager
     private let hotstringManager: HotstringManager
     private let environment = Environment()
+    private(set) var isRunning = false
+    var isPersistent: Bool {
+        !script.hotkeys.isEmpty || !script.hotstrings.isEmpty
+    }
 
     init(
         script: AHKScript,
@@ -19,7 +23,7 @@ final class AHKScriptingRuntime {
         self.hotstringManager = hotstringManager
     }
 
-    func start() throws {
+    func start(enterRunLoop: Bool = true, announce: Bool = true) throws {
         guard automation.hasAccessibilityPermission(prompt: true) else {
             throw AHKError("Accessibility permission is required for hotkeys and input automation.")
         }
@@ -45,15 +49,26 @@ final class AHKScriptingRuntime {
             }
         }
 
-        if script.hotkeys.isEmpty && script.hotstrings.isEmpty {
+        if !isPersistent {
             return
         }
 
         try hotkeyManager.start()
         hotstringManager.attach(to: hotkeyManager)
+        isRunning = true
 
-        print("macahk is running. Press Ctrl+C to stop.")
-        RunLoop.main.run()
+        if announce {
+            print("macahk is running. Press Ctrl+C to stop.")
+        }
+        if enterRunLoop {
+            RunLoop.main.run()
+        }
+    }
+
+    func stop() {
+        hotkeyManager.stop()
+        hotstringManager.reset()
+        isRunning = false
     }
 
     private func execute(_ actions: [Action]) throws {
