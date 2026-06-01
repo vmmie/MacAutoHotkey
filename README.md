@@ -34,6 +34,7 @@ Implemented in this prototype:
   - `#` Command
 - Inline hotkeys, for example:
   - `^j::MsgBox "Hello from macOS AHK"`
+- Function-key, navigation-key, and mouse-button hotkeys such as `^!F12`, `Home`, `XButton1`
 - Block hotkeys with braces
 - Simple hotstrings, for example:
   - `::brb::be right back`
@@ -45,7 +46,7 @@ Implemented in this prototype:
 - Basic expression operators: `+`, `-`, `*`, `/`, `.`, comparisons, `&&`, `||`, `!`
 - Counted `Loop` blocks with `A_Index`
 - Basic `if` blocks
-- macOS menu-bar app with `Open Script...`, `Stop Running Script`, and `Quit`
+- macOS menu-bar app with `Open Script...`, `Stop Running Script`, `Reload Script`, and `Quit`
 - `.ahk` document registration for setting MacAutoHotkey as the default app in Finder
 
 ## Download and Use
@@ -243,6 +244,16 @@ count := 2 + 3
         MsgBox "Expressions and conditions work"
     }
 }
+```
+
+`Examples/hotkeys.ahk`:
+
+```ahk
+#Requires AutoHotkey v2.0
+
+^!F12::MsgBox "Function keys work"
+#Space::MsgBox "Command+Space hotkey"
+XButton1::MsgBox "Mouse back button hotkey"
 ```
 
 ## Architecture

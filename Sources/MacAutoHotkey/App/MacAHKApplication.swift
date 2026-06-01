@@ -89,6 +89,11 @@ final class MacAHKApplication: NSObject, NSApplicationDelegate {
         stopItem.isEnabled = activeRuntime?.isRunning == true
         menu.addItem(stopItem)
 
+        let reloadItem = NSMenuItem(title: "Reload Script", action: #selector(reloadScript), keyEquivalent: "r")
+        reloadItem.target = self
+        reloadItem.isEnabled = activeScriptPath != nil
+        menu.addItem(reloadItem)
+
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(title: "Quit MacAutoHotkey", action: #selector(quit), keyEquivalent: "q")
@@ -112,6 +117,13 @@ final class MacAHKApplication: NSObject, NSApplicationDelegate {
         activeRuntime = nil
         activeScriptPath = nil
         updateMenu()
+    }
+
+    @objc private func reloadScript() {
+        guard let activeScriptPath else {
+            return
+        }
+        runScript(at: activeScriptPath)
     }
 
     @objc private func quit() {

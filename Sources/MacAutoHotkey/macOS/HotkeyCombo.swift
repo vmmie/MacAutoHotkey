@@ -24,9 +24,12 @@ struct HotkeyCombo: Hashable, CustomStringConvertible {
             case "#":
                 modifiers.insert(.command)
             default:
-                let key = remainder.trimmingCharacters(in: .whitespaces).lowercased()
+                let key = normalizeKeyName(remainder.trimmingCharacters(in: .whitespaces))
                 guard !key.isEmpty else {
                     throw AHKError("Hotkey '\(text)' has no key.")
+                }
+                guard KeyCodeMap.namedKeys[key] != nil || KeyCodeMap.mouseButtons[key] != nil else {
+                    throw AHKError("Unsupported hotkey key '\(key)' in '\(text)'.")
                 }
                 return HotkeyCombo(modifiers: modifiers, key: key)
             }
@@ -40,7 +43,8 @@ struct HotkeyCombo: Hashable, CustomStringConvertible {
         guard !text.isEmpty else {
             return false
         }
-        return text.contains("^") || text.contains("!") || text.contains("+") || text.contains("#")
+        let key = parsedKeyName(from: text)
+        return text.contains("^") || text.contains("!") || text.contains("+") || text.contains("#") || KeyCodeMap.mouseButtons[key] != nil
     }
 
     static func lineStartsWithHotkey(_ text: String) -> Bool {
@@ -48,6 +52,18 @@ struct HotkeyCombo: Hashable, CustomStringConvertible {
             return false
         }
         return looksLikeHotkey(String(text[..<range.lowerBound]))
+    }
+
+    private static func parsedKeyName(from text: String) -> String {
+        var remainder = text.trimmingCharacters(in: .whitespaces)
+        while let first = remainder.first, ["^", "!", "+", "#"].contains(first) {
+            remainder.removeFirst()
+        }
+        return normalizeKeyName(remainder)
+    }
+
+    private static func normalizeKeyName(_ text: String) -> String {
+        text.trimmingCharacters(in: .whitespaces).lowercased()
     }
 }
 

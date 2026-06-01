@@ -19,10 +19,6 @@ final class ScriptParser {
         var hotstrings: [HotstringDeclaration] = []
 
         while let line = nextMeaningfulLine() {
-            if isDirective(line.text) {
-                continue
-            }
-
             if let hotstring = try parseHotstring(line) {
                 hotstrings.append(hotstring)
                 continue
@@ -30,6 +26,10 @@ final class ScriptParser {
 
             if let hotkey = try parseHotkey(line) {
                 hotkeys.append(hotkey)
+                continue
+            }
+
+            if isDirective(line.text) {
                 continue
             }
 

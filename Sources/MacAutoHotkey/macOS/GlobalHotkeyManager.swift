@@ -24,6 +24,9 @@ final class GlobalHotkeyManager {
         }
 
         let mask = (1 << CGEventType.keyDown.rawValue)
+            | (1 << CGEventType.leftMouseDown.rawValue)
+            | (1 << CGEventType.rightMouseDown.rawValue)
+            | (1 << CGEventType.otherMouseDown.rawValue)
         let refcon = Unmanaged.passUnretained(self).toOpaque()
         guard let tap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
@@ -59,15 +62,14 @@ final class GlobalHotkeyManager {
     }
 
     fileprivate func handle(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
-        guard type == .keyDown else {
+        guard type == .keyDown || type == .leftMouseDown || type == .rightMouseDown || type == .otherMouseDown else {
             return Unmanaged.passUnretained(event)
         }
 
         keyObservers.forEach { $0(event) }
 
-        let keyCode = CGKeyCode(event.getIntegerValueField(.keyboardEventKeycode))
         let modifiers = ModifierSet.from(eventFlags: event.flags)
-        guard let key = KeyCodeMap.namedKeys.first(where: { $0.value == keyCode })?.key else {
+        guard let key = keyName(for: event, type: type) else {
             return Unmanaged.passUnretained(event)
         }
 
@@ -81,6 +83,23 @@ final class GlobalHotkeyManager {
         }
 
         return Unmanaged.passUnretained(event)
+    }
+
+    private func keyName(for event: CGEvent, type: CGEventType) -> String? {
+        switch type {
+        case .keyDown:
+            let keyCode = CGKeyCode(event.getIntegerValueField(.keyboardEventKeycode))
+            return KeyCodeMap.keyNamesByCode[keyCode]
+        case .leftMouseDown:
+            return "lbutton"
+        case .rightMouseDown:
+            return "rbutton"
+        case .otherMouseDown:
+            let rawButton = event.getIntegerValueField(.mouseEventButtonNumber)
+            return KeyCodeMap.mouseButtonNames[rawButton]
+        default:
+            return nil
+        }
     }
 }
 

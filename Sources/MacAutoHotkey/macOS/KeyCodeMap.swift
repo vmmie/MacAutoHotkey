@@ -12,8 +12,37 @@ enum KeyCodeMap {
         "n": 45, "m": 46, ".": 47, "`": 50, "space": 49, "tab": 48,
         "return": 36, "enter": 36, "escape": 53, "esc": 53, "delete": 51,
         "backspace": 51, "left": 123, "right": 124, "down": 125, "up": 126,
-        "f1": 122, "f2": 120, "f3": 99, "f4": 118, "f5": 96, "f6": 97,
-        "f7": 98, "f8": 100, "f9": 101, "f10": 109, "f11": 103, "f12": 111
+        "home": 115, "end": 119, "pgup": 116, "pageup": 116, "pgdn": 121,
+        "pagedown": 121, "insert": 114, "ins": 114, "forwarddelete": 117,
+        "del": 117, "capslock": 57, "f1": 122, "f2": 120, "f3": 99,
+        "f4": 118, "f5": 96, "f6": 97, "f7": 98, "f8": 100, "f9": 101,
+        "f10": 109, "f11": 103, "f12": 111, "f13": 105, "f14": 107,
+        "f15": 113, "f16": 106, "f17": 64, "f18": 79, "f19": 80,
+        "f20": 90
+    ]
+
+    static let keyNamesByCode: [CGKeyCode: String] = {
+        var result: [CGKeyCode: String] = [:]
+        for (name, code) in namedKeys where result[code] == nil || name.count < (result[code]?.count ?? Int.max) {
+            result[code] = name
+        }
+        return result
+    }()
+
+    static let mouseButtons: [String: Int64] = [
+        "lbutton": 0,
+        "rbutton": 1,
+        "mbutton": 2,
+        "xbutton1": 3,
+        "xbutton2": 4
+    ]
+
+    static let mouseButtonNames: [Int64: String] = [
+        0: "lbutton",
+        1: "rbutton",
+        2: "mbutton",
+        3: "xbutton1",
+        4: "xbutton2"
     ]
 
     static let printable: [Character: (keyCode: CGKeyCode, shift: Bool)] = [
