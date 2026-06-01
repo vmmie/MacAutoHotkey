@@ -4,6 +4,8 @@ import CoreGraphics
 import Foundation
 
 final class MacAutomation {
+    private lazy var keyboardLayout = KeyboardLayout()
+
     func hasAccessibilityPermission(prompt: Bool) -> Bool {
         let key = "AXTrustedCheckOptionPrompt"
         return AXIsProcessTrustedWithOptions([key: prompt] as CFDictionary)
@@ -69,14 +71,13 @@ final class MacAutomation {
     }
 
     private func send(character: Character) {
-        guard let mapping = KeyCodeMap.printable[character] else {
+        guard let mapping = keyboardLayout.mapping(for: character) else {
             pasteViaClipboard(String(character))
             return
         }
 
-        let flags: CGEventFlags = mapping.shift ? .maskShift : []
-        postKey(keyCode: mapping.keyCode, keyDown: true, flags: flags)
-        postKey(keyCode: mapping.keyCode, keyDown: false, flags: flags)
+        postKey(keyCode: mapping.keyCode, keyDown: true, flags: mapping.flags)
+        postKey(keyCode: mapping.keyCode, keyDown: false, flags: mapping.flags)
     }
 
     private func pasteViaClipboard(_ text: String) {

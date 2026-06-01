@@ -43,6 +43,7 @@ Implemented in this prototype:
 - `MouseMove`
 - `Click`
 - `Sleep`
+- Layout-aware `Send` for characters available in the active macOS keyboard layout, with pasteboard fallback for unsupported characters
 - Basic expression operators: `+`, `-`, `*`, `/`, `.`, comparisons, `&&`, `||`, `!`
 - Counted `Loop` blocks with `A_Index`
 - Basic `if` blocks
@@ -143,6 +144,7 @@ The app bundle also contains the `macahk` CLI:
 ```sh
 /Applications/MacAutoHotkey.app/Contents/MacOS/macahk --help
 /Applications/MacAutoHotkey.app/Contents/MacOS/macahk --check-script Examples/hello.ahk
+/Applications/MacAutoHotkey.app/Contents/MacOS/macahk --keyboard-layout
 /Applications/MacAutoHotkey.app/Contents/MacOS/macahk Examples/hello.ahk
 ```
 
@@ -306,7 +308,7 @@ This is an early runtime, not a complete AutoHotkey implementation.
 - Expressions support a small operator subset, but not the complete AutoHotkey v2 expression grammar.
 - Function definitions, user-defined functions, objects, arrays, interpolation, `else`, `break`, and `continue` are not implemented yet.
 - Hotkey parsing handles common keys but not the full AHK key grammar.
-- `Send` is ASCII-oriented and falls back to pasteboard for unsupported characters.
+- `Send` uses the active macOS keyboard layout for direct key events where possible and falls back to pasteboard insertion for unsupported characters. Full AHK `Send` modes are not implemented yet.
 - Hotstrings are simple suffix replacements and do not yet implement AHK options.
 - Window, process, image search, clipboard, GUI, and file APIs are not implemented yet.
 - macOS security prompts and permissions are required for useful automation.

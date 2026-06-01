@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 
 final class CommandLineInterface {
@@ -31,6 +32,12 @@ final class CommandLineInterface {
             return
         }
 
+        if let layoutIndex = args.firstIndex(of: "--keyboard-layout") {
+            let characters = args.indices.contains(layoutIndex + 1) ? args[layoutIndex + 1] : "aAzZ0123456789äöüÄÖÜß.,;:-_+*#'\"!?()[]{}<>/\\@€ "
+            printKeyboardLayout(characters: characters)
+            return
+        }
+
         guard let scriptPath = args.first(where: { !$0.hasPrefix("-") }) else {
             throw AHKError("Missing script path.")
         }
@@ -60,10 +67,32 @@ final class CommandLineInterface {
         Usage:
           macahk <script.ahk>
           macahk --check-script <script.ahk>
+          macahk --keyboard-layout [characters]
           macahk --check-accessibility
 
         This prototype supports a focused v2-style subset:
           hotkeys, hotstrings, := variables, MsgBox, Send, MouseMove, Click, Sleep
         """)
+    }
+
+    private func printKeyboardLayout(characters: String) {
+        let layout = KeyboardLayout()
+        print("Keyboard layout: \(layout.inputSourceName)")
+        for entry in layout.describe(characters: characters) {
+            if let mapping = entry.mapping {
+                print("\(entry.character): keyCode=\(mapping.keyCode) flags=\(describe(mapping.flags))")
+            } else {
+                print("\(entry.character): pasteboard fallback")
+            }
+        }
+    }
+
+    private func describe(_ flags: CGEventFlags) -> String {
+        var names: [String] = []
+        if flags.contains(.maskShift) { names.append("shift") }
+        if flags.contains(.maskAlternate) { names.append("option") }
+        if flags.contains(.maskControl) { names.append("control") }
+        if flags.contains(.maskCommand) { names.append("command") }
+        return names.isEmpty ? "none" : names.joined(separator: "+")
     }
 }
