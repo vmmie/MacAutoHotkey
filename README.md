@@ -43,6 +43,76 @@ Implemented in this prototype:
 - `Click`
 - `Sleep`
 
+## Download and Use
+
+Most users should download the release ZIP instead of building from source.
+
+1. Open the GitHub Releases page for this repository.
+2. Download `MacAutoHotkey-0.1.0-macos-arm64.zip`.
+3. Unzip the file.
+4. Open Terminal in the unzipped `MacAutoHotkey-0.1.0` folder.
+5. Make the executable runnable:
+
+```sh
+chmod +x macahk
+```
+
+Check whether macOS automation permission is available:
+
+```sh
+./macahk --check-accessibility
+```
+
+If permission is not granted, enable it in:
+
+`System Settings > Privacy & Security > Accessibility`
+
+Add Terminal, iTerm, or the `macahk` binary, depending on how you launch it. Depending on your macOS version, keyboard monitoring may also require:
+
+`System Settings > Privacy & Security > Input Monitoring`
+
+Run the included hotkey example:
+
+```sh
+./macahk Examples/hello.ahk
+```
+
+Then press `Control + J`. A message box should appear with:
+
+```text
+Hello from macOS AHK
+```
+
+Run your own script:
+
+```sh
+./macahk path/to/script.ahk
+```
+
+Example script:
+
+```ahk
+#Requires AutoHotkey v2.0
+
+^j::MsgBox "Hello from macOS AHK"
+```
+
+Stop a running script with `Control + C` in Terminal.
+
+### Gatekeeper
+
+The current release binary is not code-signed or notarized. macOS may block it after download. If that happens, remove the quarantine attribute from the unzipped folder:
+
+```sh
+xattr -dr com.apple.quarantine .
+```
+
+Then run the permission check again:
+
+```sh
+./macahk --check-accessibility
+```
+
 ## Build
 
 Requirements:
