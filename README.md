@@ -42,6 +42,9 @@ Implemented in this prototype:
 - `MouseMove`
 - `Click`
 - `Sleep`
+- Basic expression operators: `+`, `-`, `*`, `/`, `.`, comparisons, `&&`, `||`, `!`
+- Counted `Loop` blocks with `A_Index`
+- Basic `if` blocks
 - macOS menu-bar app with `Open Script...`, `Stop Running Script`, and `Quit`
 - `.ahk` document registration for setting MacAutoHotkey as the default app in Finder
 
@@ -64,7 +67,7 @@ The menu-bar item lets you:
 
 ### Permissions
 
-macOS must allow MacAutoHotkey to observe hotkeys and send keyboard/mouse events. Enable it in:
+macOS must allow MacAutoHotkey to observe hotkeys and send keyboard/mouse events. Scripts that only use `MsgBox`, variables, and control flow can run without this permission, but hotkeys, hotstrings, `Send`, `MouseMove`, and `Click` need it. Enable it in:
 
 `System Settings > Privacy & Security > Accessibility`
 
@@ -138,6 +141,7 @@ The app bundle also contains the `macahk` CLI:
 
 ```sh
 /Applications/MacAutoHotkey.app/Contents/MacOS/macahk --help
+/Applications/MacAutoHotkey.app/Contents/MacOS/macahk --check-script Examples/hello.ahk
 /Applications/MacAutoHotkey.app/Contents/MacOS/macahk Examples/hello.ahk
 ```
 
@@ -214,6 +218,33 @@ name := "macOS"
 ::brb::be right back
 ```
 
+`Examples/control-flow.ahk`:
+
+```ahk
+#Requires AutoHotkey v2.0
+
+count := 2 + 3
+
+^!l::
+{
+    Loop count
+    {
+        if A_Index <= 3
+        {
+            MsgBox "Loop item " . A_Index
+        }
+    }
+}
+
+^!c::
+{
+    if count >= 5 && count != 0
+    {
+        MsgBox "Expressions and conditions work"
+    }
+}
+```
+
 ## Architecture
 
 The code is intentionally split into small layers:
@@ -261,7 +292,8 @@ Windows-only or not directly portable:
 This is an early runtime, not a complete AutoHotkey implementation.
 
 - The parser supports a narrow v2-style subset.
-- Expressions do not yet support operators, function definitions, objects, arrays, or interpolation.
+- Expressions support a small operator subset, but not the complete AutoHotkey v2 expression grammar.
+- Function definitions, user-defined functions, objects, arrays, interpolation, `else`, `break`, and `continue` are not implemented yet.
 - Hotkey parsing handles common keys but not the full AHK key grammar.
 - `Send` is ASCII-oriented and falls back to pasteboard for unsupported characters.
 - Hotstrings are simple suffix replacements and do not yet implement AHK options.
@@ -271,11 +303,11 @@ This is an early runtime, not a complete AutoHotkey implementation.
 ## Roadmap
 
 1. Replace the line parser with a lexer/parser that models more of AutoHotkey v2.
-2. Add expression operators, function calls, blocks, conditionals, and loops.
+2. Add function calls, user functions, richer blocks, and broader control flow.
 3. Expand key grammar and keyboard layout handling.
 4. Add richer hotstring options and ending-character rules.
 5. Implement window/application APIs on top of Accessibility.
-6. Add a SwiftUI menu-bar companion app for script status, reload, logs, and permissions.
+6. Expand the menu-bar app with reload, logs, launch-at-login, and permission diagnostics.
 7. Add conformance tests using representative AHK v2 scripts.
 8. Investigate whether selected upstream AutoHotkey C++ parser/runtime pieces can be bridged cleanly without importing Win32 assumptions.
 

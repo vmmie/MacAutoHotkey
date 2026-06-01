@@ -117,6 +117,28 @@ final class ScriptParser {
     }
 
     private func parseAction(_ text: String, lineNumber: Int) throws -> Action {
+        if text.caseInsensitiveCompare("if") == .orderedSame || text.lowercased().hasPrefix("if ") {
+            let conditionText = String(text.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+            guard !conditionText.isEmpty else {
+                throw parseError("If expects a condition.", line: lineNumber)
+            }
+            return .ifBlock(
+                condition: try parseExpression(conditionText, lineNumber: lineNumber),
+                actions: try parseActionBody(startingAt: lineNumber)
+            )
+        }
+
+        if text.caseInsensitiveCompare("loop") == .orderedSame || text.lowercased().hasPrefix("loop ") {
+            let countText = String(text.dropFirst(4)).trimmingCharacters(in: .whitespaces)
+            guard !countText.isEmpty else {
+                throw parseError("Loop currently expects an iteration count.", line: lineNumber)
+            }
+            return .loop(
+                count: try parseExpression(countText, lineNumber: lineNumber),
+                actions: try parseActionBody(startingAt: lineNumber)
+            )
+        }
+
         if let assignment = text.range(of: ":=") {
             let name = String(text[..<assignment.lowerBound]).trimmingCharacters(in: .whitespaces)
             guard isIdentifier(name) else {
@@ -162,28 +184,42 @@ final class ScriptParser {
     }
 
     private func parseExpression(_ raw: String, lineNumber: Int) throws -> Expression {
-        let text = raw.trimmingCharacters(in: .whitespaces)
-        guard !text.isEmpty else {
-            return .literal(.empty)
+        do {
+            return try ExpressionParser(source: raw).parse()
+        } catch let error as AHKError {
+            throw parseError(error.message, line: lineNumber)
+        } catch {
+            throw parseError("Unsupported expression '\(raw.trimmingCharacters(in: .whitespaces))'.", line: lineNumber)
+        }
+    }
+
+    private func parseActionBody(startingAt lineNumber: Int) throws -> [Action] {
+        guard let line = nextMeaningfulLine() else {
+            throw parseError("Expected action body.", line: lineNumber)
         }
 
-        if text.hasPrefix("\"") {
-            guard text.hasSuffix("\""), text.count >= 2 else {
-                throw parseError("Unterminated string literal.", line: lineNumber)
+        if line.text == "{" {
+            return try parseBracedActions(startingAt: lineNumber)
+        }
+
+        if line.text == "}" {
+            throw parseError("Unexpected }.", line: line.number)
+        }
+
+        return [try parseAction(line.text, lineNumber: line.number)]
+    }
+
+    private func parseBracedActions(startingAt lineNumber: Int) throws -> [Action] {
+        var actions: [Action] = []
+
+        while let line = nextMeaningfulLine() {
+            if line.text == "}" {
+                return actions
             }
-            let inner = String(text.dropFirst().dropLast())
-            return .literal(.string(unescapeString(inner)))
+            actions.append(try parseAction(line.text, lineNumber: line.number))
         }
 
-        if let number = Double(text) {
-            return .literal(.number(number))
-        }
-
-        if isIdentifier(text) {
-            return .variable(text)
-        }
-
-        throw parseError("Unsupported expression '\(text)'.", line: lineNumber)
+        throw parseError("Missing closing }.", line: lineNumber)
     }
 
     private func splitFunctionLikeCommand(_ text: String) -> (name: String, arguments: [String]) {

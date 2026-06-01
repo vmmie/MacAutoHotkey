@@ -31,4 +31,17 @@ enum AHKValue: Equatable, CustomStringConvertible {
             nil
         }
     }
+
+    var booleanValue: Bool {
+        switch self {
+        case .boolean(let value):
+            value
+        case .number(let value):
+            value != 0
+        case .string(let value):
+            !value.isEmpty && value != "0"
+        case .empty:
+            false
+        }
+    }
 }
